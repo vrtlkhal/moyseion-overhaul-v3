@@ -1002,6 +1002,10 @@ html.end-on .v3-coord{opacity:0}
 @media (hover:none){.v3-ring{display:none}}
 @media (max-width:820px){.v3-frame{inset:8px}.v3-coord{display:none}.v3-hud{bottom:22px}}
 
+/* the bar appears only once the first section has been scrolled */
+html:not(.nav-on) nav.chrome{opacity:0!important;transform:translateY(-100%)!important;pointer-events:none!important}
+html:not(.nav-on) nav.chrome *{pointer-events:none!important}
+nav.chrome{transition:opacity .5s ease,transform .5s ease,background .5s ease,height .4s ease!important}
 /* ---- header becomes a floating glass pill of links ---- */
 
 /* ---- the sections: open typography, ghost numerals, hairlines ---- */
@@ -1403,7 +1407,7 @@ html[data-theme="light"] .visit::before{background:linear-gradient(to bottom,#f4
 <script>
 (function(){
   var nav = document.getElementById('chrome');
-  function solid(){ nav.classList.toggle('solid', window.scrollY > 24); }
+  function solid(){ nav.classList.toggle('solid', window.scrollY > 24); document.documentElement.classList.toggle('nav-on', window.scrollY > window.innerHeight * 1.75); }
   window.addEventListener('scroll', solid, { passive:true }); solid();
 
   // anchors: pinned sections are reached at their pin start, everything else at its top
@@ -1759,7 +1763,7 @@ ScrollTrigger.config({
 // prepare + measure ONCE after the webfont is ready; every resize is pure math.
 const h1 = document.getElementById('wordmarkText');
 const REF_SIZE = 100;
-const WM_FIT = 0.784, WM_END_W = 0.14;
+const WM_FIT = 0.784, WM_END_W = 0.14, WM_SHRINK = 0.85;   // title is 15% smaller than the full fit; it still docks at the same size
 let wmNaturalWidth = null;
 
 function prepareWordmark(){
@@ -1771,14 +1775,14 @@ function fitWordmark(){
   if (wmNaturalWidth === null) return;
   let fontSize = REF_SIZE * (VW * WM_FIT / wmNaturalWidth);
   fontSize = Math.min(fontSize, VH * 0.42 * WM_FIT / 0.98);   // height guard
-  fontSize = Math.max(fontSize, 28);
+  fontSize = Math.max(fontSize * WM_SHRINK, 28);
   h1.style.fontSize = fontSize + 'px';
 }
 
 // Parked mark: desktop keeps the small corner tag. On a phone it is larger, sits at the
 // page margin, and is centred on the Menu button's row so the two read as one header line.
 const isPhone = () => VW <= 520;
-const wmEndScale = () => (isPhone() ? 0.34 : WM_END_W) / WM_FIT;
+const wmEndScale = () => (isPhone() ? 0.34 : WM_END_W) / WM_FIT / WM_SHRINK;
 const WM_LEFT_VW = () => (isPhone() ? 5 : 1.5);
 function wmTop(){
   if (!isPhone()) return 0.04;
